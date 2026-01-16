@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+  PieChart, Pie, Cell, Legend, LabelList, Label
 } from 'recharts';
 import { Users, Filter, X } from 'lucide-react';
 import { Alumni, DashboardState, ChartData, GraduateRow } from './types';
@@ -33,8 +33,9 @@ const App: React.FC = () => {
   const [data, setData] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [state, setState] = useState<DashboardState>({
-    selectedCareers: [],
+    selectedCareers: [...CARRERAS],
     selectedCompany: null
   });
 
@@ -51,7 +52,12 @@ const App: React.FC = () => {
         }
         const rows: GraduateRow[] = await response.json();
         if (active) {
-          setData(rows.map(mapGraduateRow));
+          const mappedData = rows.map(mapGraduateRow);
+          setData(mappedData);
+          // Debug: ver todas las carreras únicas
+          const uniqueCareers = [...new Set(mappedData.map(a => a.carrera))];
+          console.log('Carreras únicas en los datos:', uniqueCareers);
+          console.log('Total de registros:', mappedData.length);
         }
       } catch (err) {
         if (active) {
@@ -119,7 +125,7 @@ const App: React.FC = () => {
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 6);
+      .slice(0, 5);
   }, [filteredData]);
 
   const deptosChartData = useMemo((): ChartData[] => {
@@ -127,10 +133,12 @@ const App: React.FC = () => {
     filteredData.forEach(a => {
       if (a.departamento) counts[a.departamento] = (counts[a.departamento] || 0) + 1;
     });
-    return Object.entries(counts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 4);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const top5 = sorted.slice(0, 5);
+    const others = sorted.slice(5).reduce((acc, curr) => acc + curr[1], 0);
+    const result = top5.map(([name, value]) => ({ name, value }));
+    if (others > 0) result.push({ name: 'Otros', value: others });
+    return result;
   }, [filteredData]);
 
   // Matrix Logic: Empresa x Departamento
@@ -175,17 +183,56 @@ const App: React.FC = () => {
     return { rowKeys, colKeys, matrix };
   }, [filteredData]);
 
-  const selectOnlyCareer = (career: string | null) => {
+  const toggleCareer = (career: string) => {
     setState(prev => ({
       ...prev,
-      selectedCareers: career ? [career] : []
+      selectedCareers: prev.selectedCareers.includes(career)
+        ? prev.selectedCareers.filter(c => c !== career)
+        : [...prev.selectedCareers, career]
+    }));
+  };
+
+  const toggleAllCareers = () => {
+    setState(prev => ({
+      ...prev,
+      selectedCareers: prev.selectedCareers.length === CARRERAS.length ? [] : [...CARRERAS]
     }));
   };
 
   return (
     <div className="flex h-screen bg-[#7FB7A5] overflow-hidden">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-[#2F4A64] text-white p-3 rounded-xl shadow-lg hover:bg-[#274158] transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isSidebarOpen ? <X size={24} /> : <Filter size={24} />}
+      </button>
+
+      {/* Sidebar Overlay for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Vertical Menu */}
-      <aside className="w-72 bg-[#2F4A64] border-r border-[#2A4259] overflow-y-auto p-6 flex flex-col space-y-2">
+      <aside className={`
+        w-72 bg-[#2F4A64] border-r border-[#2A4259] overflow-y-auto p-6 flex flex-col space-y-2 scrollbar-custom
+        fixed lg:static inset-y-0 left-0 z-40
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#7FB7A5 #2F4A64'
+        } as React.CSSProperties & {
+          scrollbarWidth?: string;
+          scrollbarColor?: string;
+        }}
+      >
         <div className="mb-6">
           <img
             src="/logo_uai.png"
@@ -198,9 +245,9 @@ const App: React.FC = () => {
         </div>
 
         <button
-          onClick={() => selectOnlyCareer(null)}
+          onClick={toggleAllCareers}
           className={`text-left px-4 py-3 rounded-2xl text-xs font-medium border transition-all ${
-            state.selectedCareers.length === 0 
+            state.selectedCareers.length === CARRERAS.length
               ? 'bg-white border-white text-[#2F4A64] shadow-sm' 
               : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
           }`}
@@ -208,24 +255,44 @@ const App: React.FC = () => {
           Todas las carreras de pregrado
         </button>
 
-        {CARRERAS.map(carrera => (
-          <button
-            key={carrera}
-            onClick={() => selectOnlyCareer(carrera)}
-            className={`text-left px-4 py-2.5 rounded-2xl text-[11px] font-medium border transition-all ${
-              state.selectedCareers.includes(carrera)
-                ? 'bg-white border-white text-[#2F4A64] shadow-sm font-bold'
-                : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
-            }`}
-          >
-            {carrera}
-          </button>
-        ))}
+        {CARRERAS.map(carrera => {
+          const isSelected = state.selectedCareers.includes(carrera);
+          return (
+            <button
+              key={carrera}
+              onClick={() => toggleCareer(carrera)}
+              className={`text-left px-4 py-2.5 rounded-2xl text-[11px] font-medium border transition-all flex items-center gap-2 ${
+                isSelected
+                  ? 'bg-white border-white text-[#2F4A64] shadow-sm font-bold'
+                  : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
+              }`}
+            >
+              <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
+                isSelected ? 'bg-[#7FB7A5] border-[#7FB7A5]' : 'border-white/30'
+              }`}>
+                {isSelected && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span>{carrera}</span>
+            </button>
+          );
+        })}
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-[1200px] mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-custom"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#2F4A64 #7FB7A5'
+        } as React.CSSProperties & {
+          scrollbarWidth?: string;
+          scrollbarColor?: string;
+        }}
+      >
+        <div className="max-w-[1200px] mx-auto space-y-4 sm:space-y-6 pt-16 lg:pt-0">
           {(loading || error) && (
             <div className="text-[11px] font-semibold uppercase tracking-wide">
               {loading && <span className="text-slate-500">Cargando datos desde el backend...</span>}
@@ -234,9 +301,9 @@ const App: React.FC = () => {
           )}
           
           {/* Top Row: KPIs + Cargos Chart */}
-          <div className="grid grid-cols-12 gap-6 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
             {/* KPI 1 */}
-            <div className="col-span-12 md:col-span-3 bg-white border border-[#2F4A64] p-8 flex flex-col items-center justify-center text-center">
+            <div className="sm:col-span-1 lg:col-span-3 bg-white border border-[#2F4A64] rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.employabilityRate.toFixed(0)}%
               </h2>
@@ -246,7 +313,7 @@ const App: React.FC = () => {
             </div>
 
             {/* KPI 2 */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-8 flex flex-col items-center justify-center text-center">
+            <div className="sm:col-span-1 lg:col-span-4 bg-white border border-[#2F4A64] rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.total.toLocaleString()}
               </h2>
@@ -256,14 +323,16 @@ const App: React.FC = () => {
             </div>
 
             {/* Cargos Chart (Vertical Bars) */}
-            <div className="col-span-12 md:col-span-5 bg-white border border-[#2F4A64] p-6">
+            <div className="sm:col-span-2 lg:col-span-5 bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Cargos más comunes<br/>entre nuestros egresados UAI
               </h4>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cargosChartData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[4, 4, 0, 0]} />
+                  <BarChart data={cargosChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[4, 4, 0, 0]}>
+                      <LabelList dataKey="value" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }} />
+                    </Bar>
                     <XAxis dataKey="name" hide />
                     <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
                   </BarChart>
@@ -273,10 +342,10 @@ const App: React.FC = () => {
           </div>
 
           {/* Bottom Row: Rubros, Empresas, Departamentos */}
-          <div className="grid grid-cols-12 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
             
             {/* Rubros Chart */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
+            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Rubros empresariales donde trabajan actualmente nuestros egresados UAI
               </h4>
@@ -290,6 +359,8 @@ const App: React.FC = () => {
                       outerRadius={80}
                       stroke="none"
                       dataKey="value"
+                      label={({ value }) => value}
+                      labelLine={false}
                     >
                       {rubrosChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
@@ -302,16 +373,18 @@ const App: React.FC = () => {
             </div>
 
             {/* Empresas Chart (Horizontal Bars) */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
+            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Empresas con mayor<br/>número de empleados UAI
               </h4>
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart layout="vertical" data={empresasChartData} margin={{ left: -10, right: 20 }}>
+                  <BarChart layout="vertical" data={empresasChartData} margin={{ left: -10, right: 30 }}>
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 600}} width={80} />
-                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20} />
+                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20}>
+                      <LabelList dataKey="value" position="right" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }} />
+                    </Bar>
                     <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -319,7 +392,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Departamentos Chart (Donut) */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
+            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Departamentos más comunes<br/>entre nuestros egresados UAI
               </h4>
@@ -334,6 +407,8 @@ const App: React.FC = () => {
                       outerRadius={90}
                       stroke="none"
                       dataKey="value"
+                      label={({ value }) => value}
+                      labelLine={false}
                     >
                       {deptosChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
@@ -347,7 +422,7 @@ const App: React.FC = () => {
           </div>
 
           {/* New Section: Matrix Empresa x Departamento */}
-          <div className="bg-white border border-[#2F4A64] p-6">
+          <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
             <h4 className="text-[10px] font-bold uppercase text-center mb-8 tracking-widest text-slate-800">
               Matriz Empresa × Departamento (Egresados Únicos)
             </h4>
@@ -401,7 +476,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <footer className="pt-4 flex justify-between items-center text-[10px] font-bold uppercase text-slate-400">
+          <footer className="pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-bold uppercase text-slate-400 text-center sm:text-left">
             <span>Indicadores calculados solo con trabajos actuales</span>
             <span>UAI • Alumni Traceability Platform</span>
           </footer>

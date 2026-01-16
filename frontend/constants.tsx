@@ -19,7 +19,8 @@ export const CARRERAS = [
   'Ingeniería Civil en Bioingeniería',
   'Ingeniería Civil en Energía',
   'Ingeniería Civil Mecánica',
-  'Ingeniería Civil en Minería'
+  'Ingeniería Civil en Minería',
+  'Ingeniería Civil (Obras Civiles)'
 ];
 
 export const RUBROS = ['Tecnología', 'Banca y Finanzas', 'Consumo Masivo', 'Minería', 'Consultoría', 'Retail', 'Educación', 'Salud'];
