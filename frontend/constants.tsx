@@ -2,10 +2,10 @@
 import { Alumni } from './types';
 
 export const UAI_COLORS = {
-  primary: '#BD2130', // Institutional Red
-  secondary: '#1A2A3A', // Institutional Dark Blue
-  accent: '#718096',
-  chartColors: ['#BD2130', '#1A2A3A', '#4A5568', '#718096', '#A0AEC0', '#CBD5E0', '#E53E3E', '#2D3748']
+  primary: '#2F4A64',
+  secondary: '#7FB7A5',
+  accent: '#5B7D8D',
+  chartColors: ['#2F4A64', '#3E5D79', '#567290', '#6C88A5', '#7FB7A5', '#9AC9BA', '#B5DBC9', '#D0EDD9']
 };
 
 export const CARRERAS = [

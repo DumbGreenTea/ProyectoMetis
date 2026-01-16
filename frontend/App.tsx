@@ -183,22 +183,26 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f1f3f6] overflow-hidden">
+    <div className="flex h-screen bg-[#7FB7A5] overflow-hidden">
       {/* Sidebar - Vertical Menu */}
-      <aside className="w-72 bg-white border-r border-slate-200 overflow-y-auto p-6 flex flex-col space-y-2">
+      <aside className="w-72 bg-[#2F4A64] border-r border-[#2A4259] overflow-y-auto p-6 flex flex-col space-y-2">
         <div className="mb-6">
-          <div className="bg-[#BD2130] w-12 h-12 flex items-center justify-center rounded-lg mb-2">
-            <span className="text-white font-bold text-xl uppercase">UAI</span>
-          </div>
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Pregrado Alumni</h2>
+          <img
+            src="/logo_uai.png"
+            alt="UAI Alumni Red Egresados"
+            className="w-full h-auto max-h-16 object-contain"
+          />
+          <h2 className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+            Pregrado Alumni
+          </h2>
         </div>
 
         <button
           onClick={() => selectOnlyCareer(null)}
           className={`text-left px-4 py-3 rounded-2xl text-xs font-medium border transition-all ${
             state.selectedCareers.length === 0 
-              ? 'bg-slate-100 border-slate-300 text-slate-900 shadow-sm' 
-              : 'bg-white border-slate-100 text-slate-500 hover:bg-slate-50'
+              ? 'bg-white border-white text-[#2F4A64] shadow-sm' 
+              : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
           }`}
         >
           Todas las carreras de pregrado
@@ -210,8 +214,8 @@ const App: React.FC = () => {
             onClick={() => selectOnlyCareer(carrera)}
             className={`text-left px-4 py-2.5 rounded-2xl text-[11px] font-medium border transition-all ${
               state.selectedCareers.includes(carrera)
-                ? 'bg-white border-[#BD2130] text-[#BD2130] shadow-sm font-bold'
-                : 'bg-white border-slate-100 text-slate-500 hover:bg-slate-50'
+                ? 'bg-white border-white text-[#2F4A64] shadow-sm font-bold'
+                : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
             }`}
           >
             {carrera}
@@ -232,7 +236,7 @@ const App: React.FC = () => {
           {/* Top Row: KPIs + Cargos Chart */}
           <div className="grid grid-cols-12 gap-6 items-stretch">
             {/* KPI 1 */}
-            <div className="col-span-12 md:col-span-3 bg-white border border-black p-8 flex flex-col items-center justify-center text-center">
+            <div className="col-span-12 md:col-span-3 bg-white border border-[#2F4A64] p-8 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.employabilityRate.toFixed(0)}%
               </h2>
@@ -242,7 +246,7 @@ const App: React.FC = () => {
             </div>
 
             {/* KPI 2 */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-black p-8 flex flex-col items-center justify-center text-center">
+            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-8 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.total.toLocaleString()}
               </h2>
@@ -252,14 +256,14 @@ const App: React.FC = () => {
             </div>
 
             {/* Cargos Chart (Vertical Bars) */}
-            <div className="col-span-12 md:col-span-5 bg-white border border-black p-6">
+            <div className="col-span-12 md:col-span-5 bg-white border border-[#2F4A64] p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Cargos más comunes<br/>entre nuestros egresados UAI
               </h4>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={cargosChartData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                    <Bar dataKey="value" fill="#d1a3ff" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[4, 4, 0, 0]} />
                     <XAxis dataKey="name" hide />
                     <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
                   </BarChart>
@@ -272,7 +276,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-12 gap-6 items-stretch">
             
             {/* Rubros Chart */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-black p-6">
+            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Rubros empresariales donde trabajan actualmente nuestros egresados UAI
               </h4>
@@ -288,7 +292,7 @@ const App: React.FC = () => {
                       dataKey="value"
                     >
                       {rubrosChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#3b0086', '#6315c2', '#a060f0', '#d1a3ff', '#e8d4ff'][index % 5]} />
+                        <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
                       ))}
                     </Pie>
                     <Tooltip contentStyle={{fontSize: '10px'}} />
@@ -298,7 +302,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Empresas Chart (Horizontal Bars) */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-black p-6">
+            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Empresas con mayor<br/>número de empleados UAI
               </h4>
@@ -307,7 +311,7 @@ const App: React.FC = () => {
                   <BarChart layout="vertical" data={empresasChartData} margin={{ left: -10, right: 20 }}>
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 600}} width={80} />
-                    <Bar dataKey="value" fill="#7d30f5" radius={[0, 4, 4, 0]} barSize={20} />
+                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20} />
                     <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -315,7 +319,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Departamentos Chart (Donut) */}
-            <div className="col-span-12 md:col-span-4 bg-white border border-black p-6">
+            <div className="col-span-12 md:col-span-4 bg-white border border-[#2F4A64] p-6">
               <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
                 Departamentos más comunes<br/>entre nuestros egresados UAI
               </h4>
@@ -332,7 +336,7 @@ const App: React.FC = () => {
                       dataKey="value"
                     >
                       {deptosChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#421a8d', '#6f42c1', '#a685e2', '#cdb4db'][index % 4]} />
+                        <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
                       ))}
                     </Pie>
                     <Tooltip contentStyle={{fontSize: '10px'}} />
@@ -343,7 +347,7 @@ const App: React.FC = () => {
           </div>
 
           {/* New Section: Matrix Empresa x Departamento */}
-          <div className="bg-white border border-black p-6">
+          <div className="bg-white border border-[#2F4A64] p-6">
             <h4 className="text-[10px] font-bold uppercase text-center mb-8 tracking-widest text-slate-800">
               Matriz Empresa × Departamento (Egresados Únicos)
             </h4>
@@ -367,7 +371,7 @@ const App: React.FC = () => {
                         {matrixData.colKeys.map(col => {
                           const val = matrixData.matrix[row][col];
                           return (
-                            <td key={col} className={`border border-slate-300 p-2 text-center ${val > 0 ? 'text-[#6315c2] font-black' : 'text-slate-300'}`}>
+                            <td key={col} className={`border border-slate-300 p-2 text-center ${val > 0 ? 'text-[#2F4A64] font-black' : 'text-slate-300'}`}>
                               {val}
                             </td>
                           );
