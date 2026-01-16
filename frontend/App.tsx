@@ -233,20 +233,20 @@ const App: React.FC = () => {
           scrollbarColor?: string;
         }}
       >
-        <div className="mb-6">
+        <div className="mb-4">
           <img
             src="/logo_uai.png"
             alt="UAI Alumni Red Egresados"
             className="w-full h-auto max-h-16 object-contain"
           />
-          <h2 className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+          <h2 className="mt-5 text-xl font-bold tracking-wide text-white text-center">
             Pregrado Alumni
           </h2>
         </div>
 
         <button
           onClick={toggleAllCareers}
-          className={`text-left px-4 py-3 rounded-2xl text-xs font-medium border transition-all ${
+          className={`text-left px-4 py-3 rounded-2xl text-xs font-medium border transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
             state.selectedCareers.length === CARRERAS.length
               ? 'bg-white border-white text-[#2F4A64] shadow-sm' 
               : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
@@ -261,13 +261,13 @@ const App: React.FC = () => {
             <button
               key={carrera}
               onClick={() => toggleCareer(carrera)}
-              className={`text-left px-4 py-2.5 rounded-2xl text-[11px] font-medium border transition-all flex items-center gap-2 ${
+              className={`text-left px-4 py-2.5 rounded-2xl text-[11px] font-medium border transition-all duration-300 ease-in-out transform hover:scale-[1.02] flex items-center gap-2 ${
                 isSelected
                   ? 'bg-white border-white text-[#2F4A64] shadow-sm font-bold'
                   : 'bg-[#274158] border-[#33526C] text-white/70 hover:bg-[#2B4760]'
               }`}
             >
-              <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
+              <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-in-out ${
                 isSelected ? 'bg-[#7FB7A5] border-[#7FB7A5]' : 'border-white/30'
               }`}>
                 {isSelected && (
@@ -303,7 +303,7 @@ const App: React.FC = () => {
           {/* Top Row: KPIs + Cargos Chart */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
             {/* KPI 1 */}
-            <div className="sm:col-span-1 lg:col-span-3 bg-white border border-[#2F4A64] rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+            <div className="sm:col-span-1 lg:col-span-3 bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.employabilityRate.toFixed(0)}%
               </h2>
@@ -313,7 +313,7 @@ const App: React.FC = () => {
             </div>
 
             {/* KPI 2 */}
-            <div className="sm:col-span-1 lg:col-span-4 bg-white border border-[#2F4A64] rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+            <div className="sm:col-span-1 lg:col-span-4 bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6 flex flex-col items-center justify-center text-center">
               <h2 className="text-6xl font-black text-slate-900 leading-none">
                 {kpis.total.toLocaleString()}
               </h2>
@@ -323,18 +323,41 @@ const App: React.FC = () => {
             </div>
 
             {/* Cargos Chart (Vertical Bars) */}
-            <div className="sm:col-span-2 lg:col-span-5 bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
-              <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
+            <div className="sm:col-span-2 lg:col-span-5 bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6">
+              <h4 className="text-[10px] font-bold uppercase text-center mb-4 tracking-widest text-slate-800">
                 Cargos más comunes<br/>entre nuestros egresados UAI
               </h4>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cargosChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[4, 4, 0, 0]}>
-                      <LabelList dataKey="value" position="top" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }} />
+                  <BarChart data={cargosChartData} margin={{ top: 20, right: 20, left: 0, bottom: 10 }} barCategoryGap="20%">
+                    <Bar 
+                      dataKey="value" 
+                      fill={UAI_COLORS.primary} 
+                      radius={[4, 4, 0, 0]}
+                      cursor="pointer"
+                      maxBarSize={60}
+                      onMouseEnter={(data, index, e) => {
+                        e.target.style.opacity = '0.8';
+                      }}
+                      onMouseLeave={(data, index, e) => {
+                        e.target.style.opacity = '1';
+                      }}
+                    >
+                      <LabelList 
+                        dataKey="value" 
+                        position="top" 
+                        style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }}
+                        formatter={(value: number) => {
+                          const total = cargosChartData.reduce((sum, item) => sum + item.value, 0);
+                          return `${((value / total) * 100).toFixed(1)}%`;
+                        }}
+                      />
                     </Bar>
                     <XAxis dataKey="name" hide />
-                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
+                    <Tooltip 
+                      cursor={{fill: 'rgba(127, 183, 165, 0.1)'}} 
+                      contentStyle={{fontSize: '10px'}}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -345,76 +368,157 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
             
             {/* Rubros Chart */}
-            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
-              <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
+            <div className="bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6">
+              <h4 className="text-[10px] font-bold uppercase text-center mb-4 tracking-widest text-slate-800">
                 Rubros empresariales donde trabajan actualmente nuestros egresados UAI
               </h4>
-              <div className="h-[240px]">
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={rubrosChartData}
                       cx="50%"
-                      cy="50%"
-                      outerRadius={80}
+                      cy="45%"
+                      outerRadius={75}
                       stroke="none"
                       dataKey="value"
-                      label={({ value }) => value}
+                      label={(props: any) => {
+                        const RADIAN = Math.PI / 180;
+                        const { cx, cy, midAngle, outerRadius, value } = props;
+                        const radius = outerRadius + 15;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        const total = rubrosChartData.reduce((sum, item) => sum + item.value, 0);
+                        return (
+                          <text x={x} y={y} fill="#2F4A64" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                            {`${((value / total) * 100).toFixed(1)}%`}
+                          </text>
+                        );
+                      }}
                       labelLine={false}
+                      style={{ cursor: 'pointer' }}
+                      activeShape={{
+                        strokeWidth: 2,
+                        stroke: '#ffffff'
+                      }}
                     >
                       {rubrosChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{fontSize: '10px'}} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={50}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '9px', paddingTop: '10px' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{fontSize: '10px', borderRadius: '8px'}}
+                      formatter={(value: number) => {
+                        const total = rubrosChartData.reduce((sum, item) => sum + item.value, 0);
+                        return `${value} (${((value / total) * 100).toFixed(1)}%)`;
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Empresas Chart (Horizontal Bars) */}
-            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
-              <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
+            <div className="bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6">
+              <h4 className="text-[10px] font-bold uppercase text-center mb-4 tracking-widest text-slate-800">
                 Empresas con mayor<br/>número de empleados UAI
               </h4>
-              <div className="h-[240px]">
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart layout="vertical" data={empresasChartData} margin={{ left: -10, right: 30 }}>
+                  <BarChart layout="vertical" data={empresasChartData} margin={{ left: -10, right: 30 }} barCategoryGap="15%">
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 600}} width={80} />
-                    <Bar dataKey="value" fill={UAI_COLORS.primary} radius={[0, 4, 4, 0]} barSize={20}>
-                      <LabelList dataKey="value" position="right" style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }} />
+                    <Bar 
+                      dataKey="value" 
+                      fill={UAI_COLORS.primary} 
+                      radius={[0, 4, 4, 0]} 
+                      maxBarSize={35}
+                      cursor="pointer"
+                      onMouseEnter={(data, index, e) => {
+                        e.target.style.opacity = '0.8';
+                      }}
+                      onMouseLeave={(data, index, e) => {
+                        e.target.style.opacity = '1';
+                      }}
+                    >
+                      <LabelList 
+                        dataKey="value" 
+                        position="right" 
+                        style={{ fontSize: '10px', fontWeight: 'bold', fill: '#2F4A64' }}
+                        formatter={(value: number) => {
+                          const total = empresasChartData.reduce((sum, item) => sum + item.value, 0);
+                          return `${((value / total) * 100).toFixed(1)}%`;
+                        }}
+                      />
                     </Bar>
-                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{fontSize: '10px'}} />
+                    <Tooltip 
+                      cursor={{fill: 'rgba(127, 183, 165, 0.1)'}} 
+                      contentStyle={{fontSize: '10px'}}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Departamentos Chart (Donut) */}
-            <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
-              <h4 className="text-[10px] font-bold uppercase text-center mb-6 tracking-widest text-slate-800">
+            <div className="bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6">
+              <h4 className="text-[10px] font-bold uppercase text-center mb-4 tracking-widest text-slate-800">
                 Departamentos más comunes<br/>entre nuestros egresados UAI
               </h4>
-              <div className="h-[240px]">
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={deptosChartData}
                       cx="50%"
-                      cy="50%"
+                      cy="45%"
                       innerRadius={50}
-                      outerRadius={90}
+                      outerRadius={80}
                       stroke="none"
                       dataKey="value"
-                      label={({ value }) => value}
+                      label={(props: any) => {
+                        const RADIAN = Math.PI / 180;
+                        const { cx, cy, midAngle, outerRadius, value } = props;
+                        const radius = outerRadius + 15;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        const total = deptosChartData.reduce((sum, item) => sum + item.value, 0);
+                        return (
+                          <text x={x} y={y} fill="#2F4A64" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                            {`${((value / total) * 100).toFixed(1)}%`}
+                          </text>
+                        );
+                      }}
                       labelLine={false}
+                      style={{ cursor: 'pointer' }}
+                      activeShape={{
+                        strokeWidth: 2,
+                        stroke: '#ffffff'
+                      }}
                     >
                       {deptosChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={UAI_COLORS.chartColors[index % UAI_COLORS.chartColors.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{fontSize: '10px'}} />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={50}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '9px', paddingTop: '10px' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{fontSize: '10px'}} 
+                      formatter={(value: number) => {
+                        const total = deptosChartData.reduce((sum, item) => sum + item.value, 0);
+                        return `${value} (${((value / total) * 100).toFixed(1)}%)`;
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -422,7 +526,7 @@ const App: React.FC = () => {
           </div>
 
           {/* New Section: Matrix Empresa x Departamento */}
-          <div className="bg-white border border-[#2F4A64] rounded-xl p-4 sm:p-6">
+          <div className="bg-white border border-[#2F4A64] rounded-xl shadow-lg p-4 sm:p-6">
             <h4 className="text-[10px] font-bold uppercase text-center mb-8 tracking-widest text-slate-800">
               Matriz Empresa × Departamento (Egresados Únicos)
             </h4>
@@ -441,17 +545,17 @@ const App: React.FC = () => {
                   {matrixData.rowKeys.map(row => {
                     const rowTotal = matrixData.colKeys.reduce((acc, col) => acc + matrixData.matrix[row][col], 0);
                     return (
-                      <tr key={row} className="hover:bg-slate-50 transition-colors">
+                      <tr key={row} className="transition-colors duration-200">
                         <td className="border border-slate-300 p-2 font-bold bg-white text-slate-700">{row}</td>
                         {matrixData.colKeys.map(col => {
                           const val = matrixData.matrix[row][col];
                           return (
-                            <td key={col} className={`border border-slate-300 p-2 text-center ${val > 0 ? 'text-[#2F4A64] font-black' : 'text-slate-300'}`}>
+                            <td key={col} className={`border border-slate-300 p-2 text-center transition-all duration-200 ${val > 0 ? 'text-[#2F4A64] font-black hover:bg-[#7FB7A5]/20 hover:scale-110 cursor-pointer' : 'text-slate-300'}`}>
                               {val}
                             </td>
                           );
                         })}
-                        <td className="border border-slate-300 p-2 text-center font-black bg-slate-50 text-slate-900">
+                        <td className="border border-slate-300 p-2 text-center font-black bg-slate-50 text-slate-900 hover:bg-slate-100 transition-colors duration-200">
                           {rowTotal}
                         </td>
                       </tr>

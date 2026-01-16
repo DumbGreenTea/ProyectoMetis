@@ -17,3 +17,32 @@
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
   background: #6DA593;
 }
+
+/* Chart Hover Effects */
+.recharts-bar-rectangle {
+  transition: all 0.3s ease;
+  filter: brightness(1);
+}
+
+.recharts-bar-rectangle:hover {
+  filter: brightness(1.15);
+  transform: scale(1.05);
+  transform-origin: center;
+}
+
+.recharts-sector {
+  transition: all 0.3s ease;
+  filter: brightness(1);
+  cursor: pointer;
+}
+
+.recharts-sector:hover {
+  filter: brightness(1.2);
+  transform: scale(1.08);
+  transform-origin: center;
+}
+
+/* Table Rows Hover */
+.hover\:bg-slate-50:hover {
+  transition: background-color 0.2s ease;
+}
